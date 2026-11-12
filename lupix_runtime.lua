@@ -1,0 +1,158 @@
+require "sprites"
+local Scene = require "lupix_scene"
+local Runtime = {}
+local current_scene, entry_script
+local frame_scripts = {}
+local camera_x, camera_y = 0, 0
+world = { entities = {}, maps = {} }
+input = {}
+animation = {}
+camera = {}
+local actions = {
+  ["move_left"] = { 4, },
+  ["move_right"] = { 2, },
+  ["move_up"] = { 1, },
+  ["move_down"] = { 3, },
+  ["jump"] = { 7, },
+  ["dash"] = { 8, },
+  ["interact"] = { 6, },
+  ["pause"] = { 14, },
+}
+local animation_sets = {
+  ["animations/player_anim.animations.json"] = require("lupix_animations.player_anim"),
+}
+
+local function find_sprite(path)
+  local value = Sprites
+  for part in string.gmatch((path or ""):gsub("\\\\", "/"), "[^/]+") do
+    if type(value) ~= "table" then return nil end
+    value = value[part]
+  end
+  return value
+end
+local function action_down(name, pressed)
+  local list = actions[name]
+  if not list then return false end
+  for _, button in ipairs(list) do
+    if (pressed and ui.btnp(button)) or (not pressed and ui.btn(button)) then return true end
+  end
+  return false
+end
+function input.down(name) return action_down(name, false) end
+function input.pressed(name) return action_down(name, true) end
+function camera.set(x, y)
+  camera_x, camera_y = x or 0, y or 0
+  ui.camera(camera_x, camera_y)
+end
+ui.sprite = function(path, x, y, flip)
+  local sprite = find_sprite(path)
+  if sprite then ui.spr(sprite, x, y, flip or false) end
+end
+ui.sprite_region = function(path, sx, sy, sw, sh, x, y, w, h, flip)
+  local sprite = find_sprite(path)
+  if sprite then ui.spr(sprite, x, y, flip or false) end
+end
+function animation.frame(resource, clip_name, index)
+  local set = animation_sets[(resource or ""):gsub("\\\\", "/")]
+  local clip = set and set.clips and set.clips[clip_name]
+  local frame = clip and clip.frames and clip.frames[index]
+  if not frame then return nil end
+  return { sprite = frame.sprite, x = frame.export_x, y = frame.export_y,
+    width = frame.width, height = frame.height, offset_x = frame.offset_x,
+    offset_y = frame.offset_y, frame_width = clip.frame_width,
+    frame_height = clip.frame_height, fps = clip.fps, loop = clip.loop, index = index }
+end
+local function setup_world(scene)
+  current_scene = scene
+  world.entities, world.maps, frame_scripts = scene.entities or {}, {}, {}
+  for _, entity in ipairs(world.entities) do
+    if entity.tilemap then
+      world.maps[#world.maps + 1] = { data = entity.tilemap, x = entity.x or 0, y = entity.y or 0 }
+    end
+    for _, component in ipairs(entity.components or {}) do
+      if component.script then frame_scripts[#frame_scripts + 1] = { entity = entity, script = component.script } end
+    end
+  end
+end
+local function map_cell(map, x, y)
+  local meta = map.data and map.data.metadata
+  if not meta or meta.tile_size <= 0 then return nil end
+  local col, row = math.floor((x - map.x) / meta.tile_size), math.floor((y - map.y) / meta.tile_size)
+  if col < 0 or row < 0 or col >= meta.width or row >= meta.height then return nil end
+  return row * meta.width + col + 1
+end
+function world.find(name_or_id)
+  for _, entity in ipairs(world.entities) do
+    if entity.id == name_or_id or entity.name == name_or_id then return entity end
+  end
+  return nil
+end
+function world.move(entity, x, y)
+  if type(entity) == "string" then entity = world.find(entity) end
+  if type(entity) ~= "table" or type(x) ~= "number" or type(y) ~= "number" then error("world.move espera entidade/nome e coordenadas x,y") end
+  entity.x, entity.y = x, y
+end
+function world.overlap(a, b)
+  if type(a) == "string" then a = world.find(a) end
+  if type(b) == "string" then b = world.find(b) end
+  if type(a) ~= "table" or type(b) ~= "table" then return false end
+  return (a.x or 0) < (b.x or 0) + (b.width or 0) and (b.x or 0) < (a.x or 0) + (a.width or 0)
+    and (a.y or 0) < (b.y or 0) + (b.height or 0) and (b.y or 0) < (a.y or 0) + (a.height or 0)
+end
+function world.solid_at(x, y)
+  for _, map in ipairs(world.maps) do local index = map_cell(map, x, y); if index and map.data.collision[index] then return true end end
+  return false
+end
+function world.area_at(x, y, area_name)
+  local wanted = string.lower(tostring(area_name or ""))
+  for _, map in ipairs(world.maps) do
+    local index = map_cell(map, x, y)
+    if index and string.lower(tostring(map.data.areas[index] or "")) == wanted then return true end
+  end
+  return false
+end
+local function draw_scene()
+  for _, entity in ipairs(world.entities) do
+    if entity.visible ~= false then
+      if entity.tilemap then
+        for _, layer in ipairs(entity.tilemap.layer_order or {}) do
+          local data = entity.tilemap[layer.name]
+          if data then ui.map(data, entity.x or 0, entity.y or 0) end
+        end
+      end
+      local animated, script_draws = false, false
+      for _, component in ipairs(entity.components or {}) do
+        if component.type == "Animação" then animated = true end
+        if component.script then script_draws = true end
+      end
+      if entity.sprite and not animated and not script_draws then
+        local sprite = find_sprite(entity.sprite)
+        if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
+      end
+    end
+  end
+end
+function Runtime.start(scene, entry)
+  entry_script = entry or {}
+  setup_world(scene)
+end
+function Runtime.update(frame)
+  local drew_scene = false
+  local native_cls = ui.cls
+  ui.cls = function(color)
+    if drew_scene then return end
+    native_cls(color or 0)
+    draw_scene()
+    drew_scene = true
+  end
+  local ok, err = pcall(function()
+    if entry_script and type(entry_script.update) == "function" then entry_script.update(frame) end
+    for _, behavior in ipairs(frame_scripts) do
+      if behavior.script and type(behavior.script.update) == "function" then behavior.script.update(frame, behavior.entity) end
+    end
+    if not drew_scene then native_cls(0); draw_scene() end
+  end)
+  ui.cls = native_cls
+  if not ok then error(err) end
+end
+return Runtime

@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "version": "0.0.1",
+  "files": [
+    "game.lua",
+    "lupi_animation_frames/frame_126b19004615fc45",
+    "lupi_animation_frames/frame_3722c8ff10410ee1",
+    "lupi_animation_frames/frame_3a3240b4603b35c9",
+    "lupi_animation_frames/frame_726da67e5af4378d",
+    "lupi_animation_frames/frame_95681e8e799f5137",
+    "lupi_animation_frames/frame_b03fb01e6df0c00d",
+    "lupi_animation_frames/frame_c26806bba4e27d89",
+    "lupi_animation_frames/frame_c744a5c71f06ad6d",
+    "lupi_animation_frames/frame_d586eca75e88fc1a",
+    "lupi_animation_frames/frame_e17f564e41a9c988",
+    "lupi_animation_frames/frame_e397bc7d0cba75f4",
+    "lupi_animation_frames/frame_f2d511992306a5de",
+    "lupi_animation_frames/frame_f588a336fe528981",
+    "lupix_animations/player_anim.lua",
+    "lupix_entry.lua",
+    "lupix_runtime.lua",
+    "lupix_scene.lua",
+    "lupix_scenes/Main.lua",
+    "palette.lua",
+    "lupi.yaml",
+    "lupi_manifest.txt",
+    ".lupix-published.json",
+    "lupix-export-report.json"
+  ]
+}
