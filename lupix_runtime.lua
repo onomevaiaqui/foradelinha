@@ -144,14 +144,33 @@ local function draw_scene()
           if data then ui.map(data, entity.x or 0, entity.y or 0) end
         end
       end
-      local animated, script_draws = false, false
+      local animated, animation_set, script_draws = false, nil, false
       for _, component in ipairs(entity.components or {}) do
-        if component.type == "Animação" then animated = true end
+        if component.type == "Animação" then
+          animated = true
+          animation_set = component.animations
+        end
         if component.script then script_draws = true end
       end
       if entity.sprite and not animated and not script_draws then
         local sprite = find_sprite(entity.sprite)
         if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
+      elseif animated and not script_draws then
+        -- Match the editor's static pose preview: when an entity
+        -- has animation metadata but no Lua drawing script yet,
+        -- keep its first pose visible instead of hiding the sprite.
+        -- Playback and state selection remain the user's Lua code.
+        local clip_name = animation_set and animation_set.default_clip
+        local clip = clip_name and animation_set.clips and animation_set.clips[clip_name]
+        local frame = clip and clip.frames and clip.frames[1]
+        local sprite = frame and find_sprite(frame.sprite)
+        if sprite then
+          ui.spr(sprite, (entity.x or 0) + (frame.offset_x or 0),
+            (entity.y or 0) + (frame.offset_y or 0), false)
+        elseif entity.sprite then
+          sprite = find_sprite(entity.sprite)
+          if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
+        end
       end
     end
   end
