@@ -60,6 +60,7 @@ local ok, result = pcall(function()
 end)
 if ok then Runtime = result else boot_error = tostring(result) end
 local function show_error(message)
+  if type(hardware_ui.log) == "function" then hardware_ui.log("[LUPIX] erro: " .. tostring(message or "desconhecido")) end
   ui.camera()
   ui.cls(0)
   ui.print("LUPIX - FALHA NO JOGO", 8, 8, 7)

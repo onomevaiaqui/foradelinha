@@ -4,6 +4,11 @@ local Runtime = {}
 local current_scene, entry_script, transition_data
 local frame_scripts = {}
 local camera_x, camera_y = 0, 0
+local diagnostic_frame_logged = false
+local diagnostic_draw_logged = false
+local function diagnostic_log(message)
+  if ui and type(ui.log) == "function" then pcall(ui.log, "[LUPIX] " .. tostring(message)) end
+end
 world = { entities = {}, maps = {} }
 input = {}
 animation = {}
@@ -136,12 +141,17 @@ function world.area_at(x, y, area_name)
   return false
 end
 local function draw_scene()
+  local trace_frame = not diagnostic_draw_logged
+  if trace_frame then diagnostic_log("draw_scene begin entities=" .. tostring(#world.entities)) end
   for _, entity in ipairs(world.entities) do
     if entity.visible ~= false then
       if entity.tilemap then
         for _, layer in ipairs(entity.tilemap.layer_order or {}) do
           local data = entity.tilemap[layer.name]
-          if data then ui.map(data, entity.x or 0, entity.y or 0) end
+          if data then
+            if trace_frame then diagnostic_log("map call entity=" .. tostring(entity.name) .. " layer=" .. tostring(layer.name)) end
+            ui.map(data, entity.x or 0, entity.y or 0)
+          end
         end
       end
       local animated, animation_set, script_draws = false, nil, false
@@ -154,6 +164,7 @@ local function draw_scene()
       end
       if entity.sprite and not animated and not script_draws then
         local sprite = find_sprite(entity.sprite)
+        if trace_frame then diagnostic_log("sprite draw entity=" .. tostring(entity.name) .. " found=" .. tostring(sprite ~= nil)) end
         if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
       elseif animated and not script_draws then
         -- Match the editor's static pose preview: when an entity
@@ -164,6 +175,7 @@ local function draw_scene()
         local clip = clip_name and animation_set.clips and animation_set.clips[clip_name]
         local frame = clip and clip.frames and clip.frames[1]
         local sprite = frame and find_sprite(frame.sprite)
+        if trace_frame then diagnostic_log("animation pose entity=" .. tostring(entity.name) .. " clip=" .. tostring(clip_name) .. " found=" .. tostring(sprite ~= nil)) end
         if sprite then
           ui.spr(sprite, (entity.x or 0) + (frame.offset_x or 0),
             (entity.y or 0) + (frame.offset_y or 0), false)
@@ -174,13 +186,26 @@ local function draw_scene()
       end
     end
   end
+  if trace_frame then diagnostic_log("draw_scene end"); diagnostic_draw_logged = true end
 end
 function Runtime.start(initial_scene, entry, initial_scene_path)
   entry_script = entry or {}
   current_scene = initial_scene_path
   setup_world(initial_scene)
+  diagnostic_log("runtime start scene=" .. tostring(current_scene) .. " entities=" .. tostring(#world.entities) .. " maps=" .. tostring(#world.maps))
+  for _, entity in ipairs(world.entities) do
+    if entity.sprite then
+      local sprite = find_sprite(entity.sprite)
+      diagnostic_log("sprite entity=" .. tostring(entity.name) .. " found=" .. tostring(sprite ~= nil) ..
+        " path=" .. tostring(entity.sprite) .. (sprite and (" size=" .. tostring(sprite.width) .. "x" .. tostring(sprite.height)) or ""))
+    end
+    if entity.tilemap then
+      diagnostic_log("tilemap entity=" .. tostring(entity.name) .. " layers=" .. tostring(#(entity.tilemap.layer_order or {})))
+    end
+  end
 end
 function Runtime.update(frame)
+  if not diagnostic_frame_logged then diagnostic_log("first update frame=" .. tostring(frame)); diagnostic_frame_logged = true end
   local drew_scene = false
   local native_cls = ui.cls
   ui.cls = function(color)
@@ -197,6 +222,6 @@ function Runtime.update(frame)
     if not drew_scene then native_cls(0); draw_scene() end
   end)
   ui.cls = native_cls
-  if not ok then error(err) end
+  if not ok then diagnostic_log("update erro: " .. tostring(err)); error(err) end
 end
 return Runtime
