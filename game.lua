@@ -28,7 +28,7 @@ ui = setmetatable({
 local Runtime, boot_error
 local ok, result = pcall(function()
   local runtime = require "lupix_runtime"
-  local scene = require("lupix_scenes.Main")
+  local scene = require("scn_main_e5d44358")
   local entry = require "lupix_entry"
   runtime.start(scene, entry, "scenes/Main.scene.json")
   return runtime

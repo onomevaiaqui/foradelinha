@@ -20,10 +20,10 @@ local actions = {
   ["pause"] = { 14, },
 }
 local animation_sets = {
-  ["animations/player_anim.animations.json"] = require("lupix_animations.player_anim"),
+  ["animations/player_anim.animations.json"] = require("anm_player__90ad80bf"),
 }
 local scenes = {
-  ["scenes/Main.scene.json"] = require("lupix_scenes.Main"),
+  ["scenes/Main.scene.json"] = require("scn_main_e5d44358"),
 }
 
 local function find_sprite(path)
