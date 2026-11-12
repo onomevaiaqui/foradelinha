@@ -2,7 +2,14 @@
 -- Keep the editor's logical colors stable without replacing that palette.
 local loaded_palette = require("palette")
 local server_palette = type(loaded_palette) == "table" and loaded_palette or assert(Palette, "Paleta Lupi ausente")
-local logical_colors = require("lupix_colors")
+local logical_colors = {  0x0000,
+  0x1021,
+  0x52FA,
+  0x677D,
+  0x4655,
+  0x31AF,
+  0x2F93,
+}
 local hardware_ui = ui
 local remap = {[0] = 0}
 local function drawing_color(index)
