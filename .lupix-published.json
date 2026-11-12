@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "version": "0.0.7",
+  "version": "0.0.8",
   "files": [
     "game.lua",
     "sprites/lx_2fc2143e8e30.png",
