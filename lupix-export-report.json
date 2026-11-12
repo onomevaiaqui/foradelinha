@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "game": "Fora de Linha",
   "codec": "lupi-codec profile port \u00B7 BGR555 \u00B7 indexed sprites",
   "imageCount": 13,
@@ -76,7 +76,7 @@
     "durationMillisecondsPerFrame": 120,
     "loop": true,
     "paletteEntries": 16,
-    "bytes": 27369,
+    "bytes": 27357,
     "exceedsRecommended32KiBBudget": false,
     "byteBudgetNote": "32 KiB is a Lupix Studio recommendation, not a confirmed Lupi firmware limit.",
     "sourceImages": [
