@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "files": [
     "game.lua",
     "lupi_animation_frames/frame_126b19004615fc45",
@@ -24,6 +24,7 @@
     "palette.lua",
     "lupi.yaml",
     "lupi_manifest.txt",
+    "icon.gif",
     ".lupix-published.json",
     "lupix-export-report.json"
   ]

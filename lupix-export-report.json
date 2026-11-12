@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "game": "Fora de Linha",
   "codec": "lupi-codec profile port \u00B7 BGR555 \u00B7 indexed sprites",
   "imageCount": 13,
@@ -68,7 +68,21 @@
   "audioPreservedWithoutReencoding": 0,
   "audioCompatibility": "Audio files are copied byte-for-byte. WAV headers are checked, but WAV variants, MP3 and OGG support must be confirmed against the target console firmware.",
   "audioFiles": [],
-  "catalogIcon": null,
+  "catalogIcon": {
+    "file": "icon.gif",
+    "width": 128,
+    "height": 64,
+    "frames": 12,
+    "durationMillisecondsPerFrame": 120,
+    "loop": true,
+    "paletteEntries": 16,
+    "bytes": 27369,
+    "exceedsRecommended32KiBBudget": false,
+    "byteBudgetNote": "32 KiB is a Lupix Studio recommendation, not a confirmed Lupi firmware limit.",
+    "sourceImages": [
+      "assets/icon/foradelinha-catalog-icon-128x64.png"
+    ]
+  },
   "runtimeContract": "lupi-public-codec-2026-11",
   "alphaConversion": "Bayer 4x4 ordered coverage dithering to preserve semitransparent shadows in the 1-bit transparent index.",
   "verification": "Static package validation only; not a measurement of console RAM or a physical-console run."
