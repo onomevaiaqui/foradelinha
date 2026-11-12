@@ -74,5 +74,10 @@ end
 function update(frame)
   if boot_error then show_error(boot_error); return end
   local frame_ok, frame_error = pcall(function() Runtime.update(frame) end)
-  if not frame_ok then show_error(frame_error) end
+  if not frame_ok then show_error(frame_error); return end
+  if type(frame) == "number" and frame < 180 then
+    local entities = world and world.entities and #world.entities or 0
+    local maps = world and world.maps and #world.maps or 0
+    pcall(ui.print, "LUPIX F" .. tostring(frame) .. " E" .. tostring(entities) .. " M" .. tostring(maps), 8, 8, 7)
+  end
 end
