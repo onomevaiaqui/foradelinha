@@ -1,13 +1,14 @@
 require "sprites"
 local Scene = require "lupix_scene"
 local Runtime = {}
-local current_scene, entry_script
+local current_scene, entry_script, transition_data
 local frame_scripts = {}
 local camera_x, camera_y = 0, 0
 world = { entities = {}, maps = {} }
 input = {}
 animation = {}
 camera = {}
+scene = {}
 local actions = {
   ["move_left"] = { 4, },
   ["move_right"] = { 2, },
@@ -20,6 +21,9 @@ local actions = {
 }
 local animation_sets = {
   ["animations/player_anim.animations.json"] = require("lupix_animations.player_anim"),
+}
+local scenes = {
+  ["scenes/Main.scene.json"] = require("lupix_scenes.Main"),
 }
 
 local function find_sprite(path)
@@ -63,7 +67,6 @@ function animation.frame(resource, clip_name, index)
     frame_height = clip.frame_height, fps = clip.fps, loop = clip.loop, index = index }
 end
 local function setup_world(scene)
-  current_scene = scene
   world.entities, world.maps, frame_scripts = scene.entities or {}, {}, {}
   for _, entity in ipairs(world.entities) do
     if entity.tilemap then
@@ -73,6 +76,27 @@ local function setup_world(scene)
       if component.script then frame_scripts[#frame_scripts + 1] = { entity = entity, script = component.script } end
     end
   end
+end
+function scene.current() return current_scene end
+function scene.take_data()
+  local data = transition_data
+  transition_data = nil
+  return data
+end
+function scene.change(path, data)
+  if type(path) ~= "string" then error("scene.change espera o caminho relativo de uma cena") end
+  if data ~= nil and type(data) ~= "table" then error("scene.change espera dados de transição em uma tabela Lua") end
+  path = path:gsub("\\\\", "/")
+  local next_scene = scenes[path]
+  if not next_scene then error("cena não exportada ou inexistente: " .. path) end
+  if path == current_scene then return false end
+  local previous_scene = current_scene
+  if entry_script and type(entry_script.on_scene_exit) == "function" then entry_script.on_scene_exit(path) end
+  current_scene = path
+  setup_world(next_scene)
+  transition_data = data
+  if entry_script and type(entry_script.on_scene_enter) == "function" then entry_script.on_scene_enter(previous_scene, data) end
+  return true
 end
 local function map_cell(map, x, y)
   local meta = map.data and map.data.metadata
@@ -132,9 +156,10 @@ local function draw_scene()
     end
   end
 end
-function Runtime.start(scene, entry)
+function Runtime.start(initial_scene, entry, initial_scene_path)
   entry_script = entry or {}
-  setup_world(scene)
+  current_scene = initial_scene_path
+  setup_world(initial_scene)
 end
 function Runtime.update(frame)
   local drew_scene = false

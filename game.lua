@@ -5,7 +5,7 @@ local ok, result = pcall(function()
   local runtime = require "lupix_runtime"
   local scene = require("lupix_scenes.Main")
   local entry = require "lupix_entry"
-  runtime.start(scene, entry)
+  runtime.start(scene, entry, "scenes/Main.scene.json")
   return runtime
 end)
 if ok then Runtime = result else boot_error = tostring(result) end
