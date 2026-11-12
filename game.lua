@@ -51,6 +51,7 @@ ui = setmetatable({
   rectfill = hardware_ui.rectfill and function(x1,y1,x2,y2,color) return hardware_ui.rectfill(x1,y1,x2,y2,drawing_color(color)) end or nil,
 }, {__index = hardware_ui})
 local Runtime, boot_error
+local diagnostic_ticks = 0
 local ok, result = pcall(function()
   local runtime = require "lupix_runtime"
   local scene = require("scn_main_e5d44358")
@@ -73,10 +74,14 @@ local function show_error(message)
 end
 function update(frame)
   if boot_error then show_error(boot_error); return end
-  if type(frame) == "number" and frame < 600 then
-    ui.cls(0)
-    ui.print("LUPIX UPDATE OK", 8, 8, 16)
-    ui.print("FRAME " .. tostring(frame), 8, 28, 16)
+  diagnostic_ticks = diagnostic_ticks + 1
+  if diagnostic_ticks <= 600 then
+    hardware_ui.camera()
+    hardware_ui.palset(1, 32767)
+    hardware_ui.palset(2, 0)
+    hardware_ui.cls(2)
+    hardware_ui.print("LUPIX UPDATE OK", 8, 8, 1)
+    hardware_ui.print("TICK " .. tostring(diagnostic_ticks), 8, 28, 1)
     return
   end
   local frame_ok, frame_error = pcall(function() Runtime.update(frame) end)
