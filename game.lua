@@ -74,9 +74,9 @@ end
 function update(frame)
   if boot_error then show_error(boot_error); return end
   if type(frame) == "number" and frame < 600 then
-    hardware_ui.cls(0)
-    hardware_ui.print("LUPIX UPDATE OK", 8, 8, 7)
-    hardware_ui.print("FRAME " .. tostring(frame), 8, 28, 7)
+    ui.cls(0)
+    ui.print("LUPIX UPDATE OK", 8, 8, 16)
+    ui.print("FRAME " .. tostring(frame), 8, 28, 16)
     return
   end
   local frame_ok, frame_error = pcall(function() Runtime.update(frame) end)
