@@ -86,4 +86,10 @@ function update(frame)
   end
   local frame_ok, frame_error = pcall(function() Runtime.update(frame) end)
   if not frame_ok then show_error(frame_error); return end
+  if Runtime.status then
+    local status = Runtime.status()
+    hardware_ui.camera()
+    hardware_ui.print("RUNTIME OK", 4, 4, 1)
+    hardware_ui.print("DRAW " .. tostring(status.draw) .. " MAP " .. tostring(status.maps) .. " SPR " .. tostring(status.sprites), 4, 20, 1)
+  end
 end

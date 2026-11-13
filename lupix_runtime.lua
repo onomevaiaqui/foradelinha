@@ -6,6 +6,7 @@ local frame_scripts = {}
 local camera_x, camera_y = 0, 0
 local diagnostic_frame_logged = false
 local diagnostic_draw_logged = false
+local diagnostic_map_calls, diagnostic_sprite_hits = 0, 0
 local function diagnostic_log(message)
   if ui and type(ui.log) == "function" then pcall(ui.log, "[LUPIX] " .. tostring(message)) end
 end
@@ -142,6 +143,7 @@ function world.area_at(x, y, area_name)
 end
 local function draw_scene()
   local trace_frame = not diagnostic_draw_logged
+  diagnostic_map_calls, diagnostic_sprite_hits = 0, 0
   if trace_frame then diagnostic_log("draw_scene begin entities=" .. tostring(#world.entities)) end
   for _, entity in ipairs(world.entities) do
     if entity.visible ~= false then
@@ -149,6 +151,7 @@ local function draw_scene()
         for _, layer in ipairs(entity.tilemap.layer_order or {}) do
           local data = entity.tilemap[layer.name]
           if data then
+            diagnostic_map_calls = diagnostic_map_calls + 1
             if trace_frame then diagnostic_log("map call entity=" .. tostring(entity.name) .. " layer=" .. tostring(layer.name)) end
             ui.map(data, entity.x or 0, entity.y or 0)
           end
@@ -165,7 +168,7 @@ local function draw_scene()
       if entity.sprite and not animated and not script_draws then
         local sprite = find_sprite(entity.sprite)
         if trace_frame then diagnostic_log("sprite draw entity=" .. tostring(entity.name) .. " found=" .. tostring(sprite ~= nil)) end
-        if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
+        if sprite then diagnostic_sprite_hits = diagnostic_sprite_hits + 1; ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
       elseif animated and not script_draws then
         -- Match the editor's static pose preview: when an entity
         -- has animation metadata but no Lua drawing script yet,
@@ -177,11 +180,12 @@ local function draw_scene()
         local sprite = frame and find_sprite(frame.sprite)
         if trace_frame then diagnostic_log("animation pose entity=" .. tostring(entity.name) .. " clip=" .. tostring(clip_name) .. " found=" .. tostring(sprite ~= nil)) end
         if sprite then
+          diagnostic_sprite_hits = diagnostic_sprite_hits + 1
           ui.spr(sprite, (entity.x or 0) + (frame.offset_x or 0),
             (entity.y or 0) + (frame.offset_y or 0), false)
         elseif entity.sprite then
           sprite = find_sprite(entity.sprite)
-          if sprite then ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
+          if sprite then diagnostic_sprite_hits = diagnostic_sprite_hits + 1; ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
         end
       end
     end
@@ -223,5 +227,8 @@ function Runtime.update(frame)
   end)
   ui.cls = native_cls
   if not ok then diagnostic_log("update erro: " .. tostring(err)); error(err) end
+end
+function Runtime.status()
+  return { draw = diagnostic_draw_logged, maps = diagnostic_map_calls, sprites = diagnostic_sprite_hits }
 end
 return Runtime
