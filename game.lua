@@ -79,6 +79,7 @@ local function restore_palette()
 end
 function update(frame)
   restore_palette()
+  hardware_ui.camera()
   if boot_error then show_error(boot_error); return end
   local update_ok, update_error = pcall(function() Runtime.update(frame) end)
   if not update_ok then show_error(update_error); return end
