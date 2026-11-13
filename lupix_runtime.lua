@@ -260,4 +260,22 @@ function Runtime.draw_sprite_probe()
   end
   return { found = found, entities = entities }
 end
+function Runtime.draw_map_probe()
+  ui.camera()
+  ui.cls(0)
+  local maps, layers = 0, 0
+  for _, entity in ipairs(world.entities) do
+    if entity.visible ~= false and entity.tilemap then
+      maps = maps + 1
+      for _, layer in ipairs(entity.tilemap.layer_order or {}) do
+        local data = entity.tilemap[layer.name]
+        if data then
+          layers = layers + 1
+          ui.map(data, entity.x or 0, entity.y or 0)
+        end
+      end
+    end
+  end
+  return { maps = maps, layers = layers }
+end
 return Runtime
