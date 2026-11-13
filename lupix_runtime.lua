@@ -278,4 +278,11 @@ function Runtime.draw_map_probe()
   end
   return { maps = maps, layers = layers }
 end
+function Runtime.draw_scene_probe()
+  ui.camera()
+  ui.cls(0)
+  diagnostic_draw_logged = false
+  draw_scene()
+  return { maps = diagnostic_map_calls, sprites = diagnostic_sprite_hits }
+end
 return Runtime
