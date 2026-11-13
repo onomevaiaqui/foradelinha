@@ -3,7 +3,7 @@ local metadata = { width = 30, height = 16, tile_size = 16 }
 M.layer_order = {
   { name = "Ground", order = 0 },
 }
-M["Ground"] = { ["lx_121302fc7d6c"] = { [421] = 60, [422] = 61, [423] = 61, [424] = 61, [425] = 61, [426] = 61, [427] = 61, [428] = 61, [429] = 61, [430] = 61, [431] = 61, [432] = 61, [433] = 61, [434] = 62, }, metadata = metadata, lupi_metadata = metadata }
+M["Ground"] = { ["lx_121302fc7d6c"] = { [345] = 3, [346] = 31, [375] = 17, [405] = 17, [421] = 31, [422] = 31, [423] = 31, [424] = 31, [425] = 31, [426] = 31, [427] = 31, [428] = 31, [429] = 31, [430] = 31, [431] = 31, [432] = 31, [433] = 31, [434] = 31, [435] = 32, }, metadata = metadata, lupi_metadata = metadata }
 M.metadata = metadata
 M.lupi_metadata = metadata
 M.tilesets = {}
