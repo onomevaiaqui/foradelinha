@@ -87,7 +87,9 @@ function update(frame)
   hardware_ui.camera()
   hardware_ui.palset(1, 32767)
   hardware_ui.palset(2, 0)
-  hardware_ui.cls(2)
-  hardware_ui.print("AFTER 600 OK", 4, 4, 1)
-  hardware_ui.print("NO SCENE MAP OR SPRITE", 4, 20, 1)
+  local probe_ok, probe = pcall(Runtime.draw_sprite_probe)
+  if not probe_ok then show_error(probe); return end
+  hardware_ui.camera()
+  hardware_ui.print("SPRITE PROBE", 4, 4, 1)
+  hardware_ui.print("FOUND " .. tostring(probe.found) .. " / " .. tostring(probe.entities), 4, 20, 1)
 end
