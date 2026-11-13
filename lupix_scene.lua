@@ -12,19 +12,20 @@ function Scene.draw(scene, camera_x, camera_y)
   camera_x, camera_y = camera_x or 0, camera_y or 0
   for _, entity in ipairs(scene.entities or {}) do
     if entity.visible ~= false then
-      local ox = entity.x - camera_x * (entity.parallax_x or 1)
-      local oy = entity.y - camera_y * (entity.parallax_y or 1)
+      ui.camera(math.floor(camera_x * (entity.parallax_x or 1)),
+        math.floor(camera_y * (entity.parallax_y or 1)))
       if entity.tilemap then
         for _, layer in ipairs(entity.tilemap.layer_order or {}) do
-          ui.map(entity.tilemap[layer.name], ox, oy)
+          ui.map(entity.tilemap[layer.name], entity.x, entity.y)
         end
       end
       if entity.sprite then
         local ref = sprite(entity.sprite)
-        if ref then ui.spr(ref, ox, oy) end
+        if ref then ui.spr(ref, entity.x, entity.y) end
       end
     end
   end
+  ui.camera(camera_x, camera_y)
 end
 function Scene.cell_index(map, x, y, origin_x, origin_y)
   local m = map and map.metadata

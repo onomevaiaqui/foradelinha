@@ -147,6 +147,12 @@ local function draw_scene()
   if trace_frame then diagnostic_log("draw_scene begin entities=" .. tostring(#world.entities)) end
   for _, entity in ipairs(world.entities) do
     if entity.visible ~= false then
+      -- Parallax is evaluated per entity by changing the hardware
+      -- camera for that draw. Keep the entity in world coordinates;
+      -- ui.map/ui.spr already subtract the active camera.
+      local parallax_x = tonumber(entity.parallax_x) or 1
+      local parallax_y = tonumber(entity.parallax_y) or 1
+      ui.camera(math.floor(camera_x * parallax_x), math.floor(camera_y * parallax_y))
       if entity.tilemap then
         for _, layer in ipairs(entity.tilemap.layer_order or {}) do
           local data = entity.tilemap[layer.name]
@@ -190,6 +196,8 @@ local function draw_scene()
       end
     end
   end
+  -- Leave the normal camera active for the next Lua/UI drawing calls.
+  ui.camera(camera_x, camera_y)
   if trace_frame then diagnostic_log("draw_scene end"); diagnostic_draw_logged = true end
 end
 function Runtime.start(initial_scene, entry, initial_scene_path)

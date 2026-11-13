@@ -16,5 +16,15 @@ local M = { default_clip = "idle", clips = {
     { x = 200, y = 38, width = 14, height = 17, offset_x = 0, offset_y = 0, sprite = "sprites/lx_0a1aa9f69a42", export_x = 0, export_y = 0 },
     { x = 232, y = 37, width = 15, height = 16, offset_x = 0, offset_y = 1, sprite = "sprites/lx_26581f0fd6a8", export_x = 0, export_y = 0 },
   } },
+  ["climb"] = { sprite = "sprites/lx_8543cc84aa22", frame_width = 15, frame_height = 17, trim_x = 1, trim_y = 2, trim_width = 13, trim_height = 15, columns = 17, first_frame = 0, frame_count = 8, fps = 14, loop = true, frames = {
+    { x = 11, y = 72, width = 13, height = 15, offset_x = 1, offset_y = 2, sprite = "sprites/lx_fcef113f3145", export_x = 0, export_y = 0 },
+    { x = 43, y = 72, width = 15, height = 16, offset_x = 0, offset_y = 1, sprite = "sprites/lx_66a35ac7188f", export_x = 0, export_y = 0 },
+    { x = 75, y = 71, width = 15, height = 17, offset_x = 0, offset_y = 0, sprite = "sprites/lx_26fadd1fd0e1", export_x = 0, export_y = 0 },
+    { x = 107, y = 72, width = 14, height = 16, offset_x = 0, offset_y = 1, sprite = "sprites/lx_5b913360c6a0", export_x = 0, export_y = 0 },
+    { x = 138, y = 72, width = 13, height = 15, offset_x = 1, offset_y = 2, sprite = "sprites/lx_75e9def63b08", export_x = 0, export_y = 0 },
+    { x = 168, y = 72, width = 15, height = 16, offset_x = 0, offset_y = 1, sprite = "sprites/lx_4d1aed9ff24a", export_x = 0, export_y = 0 },
+    { x = 200, y = 71, width = 15, height = 17, offset_x = 0, offset_y = 0, sprite = "sprites/lx_03cc25b8bf06", export_x = 0, export_y = 0 },
+    { x = 233, y = 72, width = 14, height = 16, offset_x = 0, offset_y = 1, sprite = "sprites/lx_2b75d709af26", export_x = 0, export_y = 0 },
+  } },
 } }
 return M

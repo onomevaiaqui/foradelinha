@@ -3,9 +3,12 @@
 local loaded_palette = require("palette")
 local server_palette = type(loaded_palette) == "table" and loaded_palette or assert(Palette, "Paleta Lupi ausente")
 local logical_colors = {  0x0000,
+  0x1021,
+  0x41AB,
+  0x28E6,
+  0x5650,
   0x2D07,
   0x20A5,
-  0x1021,
   0x1842,
   0x2AAA,
   0x2605,
