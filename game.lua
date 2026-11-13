@@ -87,9 +87,12 @@ function update(frame)
   hardware_ui.camera()
   hardware_ui.palset(1, 32767)
   hardware_ui.palset(2, 0)
-  local probe_ok, probe = pcall(Runtime.draw_scene_probe)
-  if not probe_ok then show_error(probe); return end
+  local update_ok, update_error = pcall(function() Runtime.update(frame) end)
+  if not update_ok then show_error(update_error); return end
+  hardware_ui.palset(1, 32767)
+  hardware_ui.palset(2, 0)
+  local status = Runtime.status()
   hardware_ui.camera()
-  hardware_ui.print("SCENE DRAW PROBE", 4, 4, 1)
-  hardware_ui.print("MAPS " .. tostring(probe.maps) .. " SPR " .. tostring(probe.sprites), 4, 20, 1)
+  hardware_ui.print("RUNTIME UPDATE OK", 4, 4, 1)
+  hardware_ui.print("DRAW " .. tostring(status.draw) .. " MAP " .. tostring(status.maps) .. " SPR " .. tostring(status.sprites), 4, 20, 1)
 end
