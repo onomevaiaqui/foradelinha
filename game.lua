@@ -84,12 +84,9 @@ function update(frame)
     hardware_ui.print("TICK " .. tostring(diagnostic_ticks), 8, 28, 1)
     return
   end
-  local frame_ok, frame_error = pcall(function() Runtime.update(frame) end)
-  if not frame_ok then show_error(frame_error); return end
-  if Runtime.status then
-    local status = Runtime.status()
-    hardware_ui.camera()
-    hardware_ui.print("RUNTIME OK", 4, 4, 1)
-    hardware_ui.print("DRAW " .. tostring(status.draw) .. " MAP " .. tostring(status.maps) .. " SPR " .. tostring(status.sprites), 4, 20, 1)
-  end
+  local probe_ok, probe = pcall(Runtime.draw_sprite_probe)
+  if not probe_ok then show_error(probe); return end
+  hardware_ui.camera()
+  hardware_ui.print("SPRITE PROBE", 4, 4, 1)
+  hardware_ui.print("FOUND " .. tostring(probe.found) .. " / " .. tostring(probe.entities), 4, 20, 1)
 end

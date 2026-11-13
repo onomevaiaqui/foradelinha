@@ -231,4 +231,33 @@ end
 function Runtime.status()
   return { draw = diagnostic_draw_logged, maps = diagnostic_map_calls, sprites = diagnostic_sprite_hits }
 end
+function Runtime.draw_sprite_probe()
+  ui.camera()
+  ui.cls(0)
+  local found, entities = 0, 0
+  for _, entity in ipairs(world.entities) do
+    if entity.visible ~= false then
+      local path = entity.sprite
+      local offset_x, offset_y = 0, 0
+      for _, component in ipairs(entity.components or {}) do
+        if component.type == "Animação" then
+          local set = component.animations
+          local clip_name = set and set.default_clip
+          local clip = clip_name and set.clips and set.clips[clip_name]
+          local frame = clip and clip.frames and clip.frames[1]
+          if frame then path, offset_x, offset_y = frame.sprite, frame.offset_x or 0, frame.offset_y or 0 end
+        end
+      end
+      if path then
+        entities = entities + 1
+        local sprite = find_sprite(path)
+        if sprite then
+          found = found + 1
+          ui.spr(sprite, (entity.x or 0) + offset_x, (entity.y or 0) + offset_y, false)
+        end
+      end
+    end
+  end
+  return { found = found, entities = entities }
+end
 return Runtime
