@@ -25,6 +25,11 @@ local logical_colors = {  0x0000,
   0x56B5,
   0x4631,
   0x19DB,
+  0x52FA,
+  0x677D,
+  0x4655,
+  0x31AF,
+  0x2F93,
 }
 local hardware_ui = ui
 local remap = {[0] = 0}

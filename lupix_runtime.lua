@@ -28,6 +28,7 @@ local actions = {
   ["pause"] = { 14, },
 }
 local animation_sets = {
+  ["animations/Player_anim.animations.json"] = require("anm_player__10347491"),
 }
 local scenes = {
   ["scenes/Main.scene.json"] = require("scn_main_e5d44358"),
