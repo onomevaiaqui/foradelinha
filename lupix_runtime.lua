@@ -207,14 +207,24 @@ local function draw_scene()
           animation_set = component.animations
         end
       end
-      -- A Lua behavior (for example movement/physics) must not
-      -- suppress the Sprite/Animation components on the entity.
-      -- Component rendering remains active even when a script is attached.
+      local custom_animation_draw = false
+      if animated then
+        for _, behavior in ipairs(frame_scripts) do
+          if behavior.entity == entity and behavior.script
+            and type(behavior.script.draw) == "function" then
+            custom_animation_draw = true
+            break
+          end
+        end
+      end
+      -- A movement-only Lua behavior keeps component rendering.
+      -- If an animated entity has its own draw(), that callback
+      -- owns its pose; drawing the default pose too duplicates it.
       if entity.sprite and not animated then
         local sprite = find_sprite(entity.sprite)
         if trace_frame then diagnostic_log("sprite draw entity=" .. tostring(entity.name) .. " found=" .. tostring(sprite ~= nil)) end
         if sprite then diagnostic_sprite_hits = diagnostic_sprite_hits + 1; ui.spr(sprite, entity.x or 0, entity.y or 0, false) end
-      elseif animated then
+      elseif animated and not custom_animation_draw then
         -- Match the editor's static pose preview: when an entity
         -- has animation metadata but no Lua drawing script yet,
         -- keep its first pose visible instead of hiding the sprite.
