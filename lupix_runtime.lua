@@ -4,6 +4,7 @@ local Runtime = {}
 local current_scene, entry_script, transition_data
 local frame_scripts = {}
 local camera_x, camera_y = 0, 0
+local camera_manual = false
 local diagnostic_frame_logged = false
 local diagnostic_draw_logged = false
 local diagnostic_map_calls, diagnostic_sprite_hits = 0, 0
@@ -21,12 +22,12 @@ local actions = {
   ["move_up"] = { 1, },
   ["move_down"] = { 3, },
   ["jump"] = { 7, },
+  ["run"] = { 11, },
   ["dash"] = { 8, },
   ["interact"] = { 6, },
   ["pause"] = { 14, },
 }
 local animation_sets = {
-  ["animations/player_anim.animations.json"] = require("anm_player__90ad80bf"),
 }
 local scenes = {
   ["scenes/Main.scene.json"] = require("scn_main_e5d44358"),
@@ -52,6 +53,7 @@ function input.down(name) return action_down(name, false) end
 function input.pressed(name) return action_down(name, true) end
 function camera.set(x, y)
   camera_x, camera_y = x or 0, y or 0
+  camera_manual = true
   ui.camera(camera_x, camera_y)
 end
 ui.sprite = function(path, x, y, flip)
@@ -74,14 +76,48 @@ function animation.frame(resource, clip_name, index)
 end
 local function setup_world(scene)
   world.entities, world.maps, frame_scripts = scene.entities or {}, {}, {}
+  world.camera = nil
   for _, entity in ipairs(world.entities) do
     if entity.tilemap then
       world.maps[#world.maps + 1] = { data = entity.tilemap, x = entity.x or 0, y = entity.y or 0 }
     end
     for _, component in ipairs(entity.components or {}) do
       if component.script then frame_scripts[#frame_scripts + 1] = { entity = entity, script = component.script } end
+      if component.type == "Camera2D" and component.settings and not world.camera then
+        world.camera = { owner = entity, settings = component.settings }
+      end
     end
   end
+end
+local function update_camera()
+  if camera_manual or not world.camera then return end
+  local owner, settings = world.camera.owner, world.camera.settings
+  local target = owner
+  if settings.target_id and settings.target_id ~= "" then
+    for _, entity in ipairs(world.entities) do if entity.id == settings.target_id then target = entity; break end end
+  end
+  local cx = (target.x or 0) + (target.width or 0) / 2 + (settings.offset_x or 0)
+  local cy = (target.y or 0) + (target.height or 0) / 2 + (settings.offset_y or 0)
+  local dw, dh = math.max(0, settings.dead_zone_width or 0), math.max(0, settings.dead_zone_height or 0)
+  local left_x, right_x = camera_x + (480 - dw) / 2, camera_x + (480 + dw) / 2
+  local top_y, bottom_y = camera_y + (270 - dh) / 2, camera_y + (270 + dh) / 2
+  local next_x, next_y = camera_x, camera_y
+  if cx < left_x then next_x = cx - (480 - dw) / 2 elseif cx > right_x then next_x = cx - (480 + dw) / 2 end
+  if cy < top_y then next_y = cy - (270 - dh) / 2 elseif cy > bottom_y then next_y = cy - (270 + dh) / 2 end
+  if dw <= 0 then next_x = cx - 240 end
+  if dh <= 0 then next_y = cy - 135 end
+  if settings.follow_x == false then next_x = camera_x end
+  if settings.follow_y == false then next_y = camera_y end
+  if settings.limits_enabled then
+    local l, t = settings.limit_left or 0, settings.limit_top or 0
+    local r, b = settings.limit_right or l + 480, settings.limit_bottom or t + 270
+    next_x = r - l <= 480 and l + (r - l - 480) / 2 or math.max(l, math.min(r - 480, next_x))
+    next_y = b - t <= 270 and t + (b - t - 270) / 2 or math.max(t, math.min(b - 270, next_y))
+  end
+  local smooth = math.max(0, settings.smoothing_seconds or 0)
+  local alpha = smooth <= 0 and 1 or (1 - math.exp(-1 / (60 * smooth)))
+  camera_x = camera_x + (next_x - camera_x) * alpha
+  camera_y = camera_y + (next_y - camera_y) * alpha
 end
 function scene.current() return current_scene end
 function scene.take_data()
@@ -218,6 +254,7 @@ function Runtime.start(initial_scene, entry, initial_scene_path)
 end
 function Runtime.update(frame)
   if not diagnostic_frame_logged then diagnostic_log("first update frame=" .. tostring(frame)); diagnostic_frame_logged = true end
+  camera_manual = false
   local drew_scene = false
   local native_cls = ui.cls
   ui.cls = function(color)
@@ -231,6 +268,7 @@ function Runtime.update(frame)
     for _, behavior in ipairs(frame_scripts) do
       if behavior.script and type(behavior.script.update) == "function" then behavior.script.update(frame, behavior.entity) end
     end
+    update_camera()
     if not drew_scene then native_cls(0); draw_scene() end
   end)
   ui.cls = native_cls
