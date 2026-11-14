@@ -21,10 +21,10 @@ local actions = {
   ["move_right"] = { 2, },
   ["move_up"] = { 1, },
   ["move_down"] = { 3, },
-  ["jump"] = { 7, },
+  ["jump"] = { 6, },
   ["run"] = { 11, },
   ["dash"] = { 8, },
-  ["interact"] = { 6, },
+  ["interact"] = { 5, },
   ["pause"] = { 14, },
 }
 local animation_sets = {
