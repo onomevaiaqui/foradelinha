@@ -21,10 +21,10 @@ local actions = {
   ["move_right"] = { 2, },
   ["move_up"] = { 1, },
   ["move_down"] = { 3, },
-  ["jump"] = { 6, },
+  ["jump"] = { 7, },
   ["run"] = { 11, },
   ["dash"] = { 8, },
-  ["interact"] = { 5, },
+  ["interact"] = { 6, },
   ["pause"] = { 14, },
 }
 local animation_sets = {
@@ -239,6 +239,17 @@ local function draw_scene()
   ui.camera(camera_x, camera_y)
   if trace_frame then diagnostic_log("draw_scene end"); diagnostic_draw_logged = true end
 end
+local function draw_script_callbacks(frame)
+  -- Scripts may split simulation and rendering into update/draw.
+  -- Keep draw after the scene's component pass so custom animation
+  -- frames are visible over the static pose shown by the component.
+  if entry_script and type(entry_script.draw) == "function" then entry_script.draw(frame) end
+  for _, behavior in ipairs(frame_scripts) do
+    if behavior.script and type(behavior.script.draw) == "function" then
+      behavior.script.draw(frame, behavior.entity)
+    end
+  end
+end
 function Runtime.start(initial_scene, entry, initial_scene_path)
   entry_script = entry or {}
   current_scene = initial_scene_path
@@ -273,6 +284,7 @@ function Runtime.update(frame)
     end
     update_camera()
     if not drew_scene then native_cls(0); draw_scene() end
+    draw_script_callbacks(frame)
   end)
   ui.cls = native_cls
   if not ok then diagnostic_log("update erro: " .. tostring(err)); error(err) end
