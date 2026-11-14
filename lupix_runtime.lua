@@ -16,6 +16,7 @@ world = { entities = {}, maps = {} }
 input = {}
 animation = {}
 camera = {}
+function camera.visible_size() return 480, 270 end
 scene = {}
 local actions = {
   ["move_left"] = { (LEFT or 4), },
