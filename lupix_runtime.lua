@@ -22,8 +22,8 @@ local actions = {
   ["move_up"] = { 1, },
   ["move_down"] = { 3, },
   ["jump"] = { 7, },
-  ["run"] = { 11, },
-  ["dash"] = { 8, },
+  ["run"] = { 8, },
+  ["dash"] = { 11, },
   ["interact"] = { 6, },
   ["pause"] = { 14, },
 }
