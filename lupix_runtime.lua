@@ -4,6 +4,7 @@ local Runtime = {}
 local current_scene, entry_script, transition_data
 local frame_scripts = {}
 local camera_x, camera_y = 0, 0
+local camera_initialized = false
 local camera_manual = false
 local diagnostic_frame_logged = false
 local diagnostic_draw_logged = false
@@ -54,6 +55,7 @@ function input.down(name) return action_down(name, false) end
 function input.pressed(name) return action_down(name, true) end
 function camera.set(x, y)
   camera_x, camera_y = x or 0, y or 0
+  camera_initialized = true
   camera_manual = true
   ui.camera(camera_x, camera_y)
 end
@@ -78,6 +80,8 @@ end
 local function setup_world(scene)
   world.entities, world.maps, frame_scripts = scene.entities or {}, {}, {}
   world.camera = nil
+  camera_initialized = false
+  camera_x, camera_y = 0, 0
   for _, entity in ipairs(world.entities) do
     if entity.tilemap then
       world.maps[#world.maps + 1] = { data = entity.tilemap, x = entity.x or 0, y = entity.y or 0 }
@@ -109,16 +113,35 @@ local function update_camera()
   if dh <= 0 then next_y = cy - 135 end
   if settings.follow_x == false then next_x = camera_x end
   if settings.follow_y == false then next_y = camera_y end
-  if settings.limits_enabled then
-    local l, t = settings.limit_left or 0, settings.limit_top or 0
-    local r, b = settings.limit_right or l + 480, settings.limit_bottom or t + 270
+  local l, t, r, b
+  if settings.limits_to_scene then
+    for _, map in ipairs(world.maps or {}) do
+      local meta = map.data and map.data.metadata
+      if meta and meta.width and meta.height and meta.tile_size then
+        local ml, mt = map.x or 0, map.y or 0
+        local mr, mb = ml + meta.width * meta.tile_size, mt + meta.height * meta.tile_size
+        if mr > ml and mb > mt then
+          l, t = l and math.min(l, ml) or ml, t and math.min(t, mt) or mt
+          r, b = r and math.max(r, mr) or mr, b and math.max(b, mb) or mb
+        end
+      end
+    end
+  elseif settings.limits_enabled then
+    l, t = settings.limit_left or 0, settings.limit_top or 0
+    r, b = settings.limit_right or l + 480, settings.limit_bottom or t + 270
+  end
+  if l and t and r and b then
     next_x = r - l <= 480 and l + (r - l - 480) / 2 or math.max(l, math.min(r - 480, next_x))
     next_y = b - t <= 270 and t + (b - t - 270) / 2 or math.max(t, math.min(b - 270, next_y))
   end
   local smooth = math.max(0, settings.smoothing_seconds or 0)
   local alpha = smooth <= 0 and 1 or (1 - math.exp(-1 / (60 * smooth)))
-  camera_x = camera_x + (next_x - camera_x) * alpha
-  camera_y = camera_y + (next_y - camera_y) * alpha
+  if not camera_initialized then
+    camera_x, camera_y, camera_initialized = next_x, next_y, true
+  else
+    camera_x = camera_x + (next_x - camera_x) * alpha
+    camera_y = camera_y + (next_y - camera_y) * alpha
+  end
 end
 function scene.current() return current_scene end
 function scene.take_data()
